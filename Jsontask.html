@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Products Table</title>
+  <link rel="stylesheet" href="../src/Calculator1.css">
+  
+</head>
+<body>
+
+  <h2>Product Table</h2>
+
+  
+  <input
+    type="text"
+    id="searchInput"
+    placeholder="Search products..."
+    onkeyup="searchProducts()"
+  >
+
+
+
+<table  id="productTable">
+  <tr>
+   <th>ID</th>
+    <th>Image</th> 
+    <th>Title</th>
+    <th>Description</th>
+    <th>Category</th>
+    <th>Price</th>
+    <th>Discount %</th>
+    <th>Rating</th>
+    <th>Stock</th>
+    <th>Brand</th>
+    <th>SKU</th>
+    <th>Weight</th>
+    <th>Warranty</th>
+    <th>Shipping</th>
+    <th>Status</th>
+    <th>ReturnPolicy</th>
+    <th>Min Qty</th>
+    <th>Action</th>
+  </tr>
+</table>
+
+
+<div id="modal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal()">✖</span>
+    <div id="details"></div>
+  </div>
+</div>
+
+<script>
+  let products = [];
+
+  
+  fetch("https://dummyjson.com/products")
+    .then(response => response.json())
+    .then(data => {
+      products = data.products; 
+      populateTable(products);
+    })
+    .catch(err => console.error(err));
+
+
+ 
+  function populateTable(products) {
+    const table = document.getElementById("productTable");
+
+   
+
+    for (let i = 0; i < products.length; i++) {
+      const p = products[i];
+
+      const row = document.createElement("tr");
+
+
+//Backticks ` allow writing multiple line
+      row.innerHTML = `          
+        <td>${p.id}</td>
+        <td><img class="thumb" src="${p.thumbnail}"></td>
+        <td>${p.title}</td>
+        <td>${p.description}</td>
+        <td>${p.category}</td>
+        <td>$${p.price}</td>
+        <td>${p.discountPercentage}%</td>
+        <td>${p.rating}</td>
+        <td>${p.stock}</td>
+        <td>${p.brand}</td>
+        <td>${p.sku }</td>
+        <td>${p.weight}</td> 
+        <td>${p.warrantyInformation || "-"}
+       <td>${p.shippingInformation || "-"}
+        <td>${p.availabilityStatus }</td>
+        <td>${p.returnPolicy || "-"}</td>
+       <td>${p.minimumOrderQuantity || "-"}</td>
+  
+        <td><button onclick="showDetails(${p.id})" >Show Details</button></td>
+      `;
+
+      table.appendChild(row);
+    }
+  }
+
+  
+  function showDetails(id) {
+    const p = products.find(x => x.id === id);
+
+    document.getElementById("details").innerHTML = `
+      <h2>Details of ${p.title}</h2>
+      <img src="${p.thumbnail}" width="120">
+      <p><b>Description:</b> ${p.description}</p>
+      <p><b>Category:</b> ${p.category}</p>
+      <p><b>Price:</b> $${p.price}</p>
+      <p><b>Rating:</b> ${p.rating}</p>
+      <p><b>Stock:</b> ${p.stock}</p>
+       <p><b>Tags:</b> ${p.tags.join(", ")}</p>
+    <p><b>Brand:</b> ${p.brand}</p>
+    <p><b>SKU:</b> ${p.sku}</p>
+    <p><b>Weight:</b> ${p.weight}</p>
+    <p><b>Dimensions:</b> 
+      ${p.dimensions.width} × 
+      ${p.dimensions.height} ×
+      ${p.dimensions.depth}
+    </p>
+    <p><b>Warranty:</b> ${p.warrantyInformation}</p>
+    <p><b>Shipping:</b> ${p.shippingInformation}</p>
+    <p><b>Status:</b> ${p.availabilityStatus}</p>
+    <p><b>Return Policy:</b> ${p.returnPolicy}</p>
+    <p><b>Minimum Order Qty:</b> ${p.minimumOrderQuantity}</p>
+    
+    <h4>Reviews</h4>
+    ${p.reviews.map(r => `
+      <p>
+        ⭐ ${r.rating}<br>
+       <b>Comment:</b> ${r.comment}<br>
+        <small>
+          <b>Name:</b> ${r.reviewerName} <br>
+           <b>Mail:</b>${r.reviewerEmail}<br>
+           <b>Date:</b> ${new Date(r.date).toLocaleDateString()}
+       </small>
+      </p>
+    `).join("")}
+
+    <h4>Meta Info</h4>
+    <p><b>Created:</b> ${p.meta.createdAt}</p>
+    <p><b>Updated:</b> ${p.meta.updatedAt}</p>
+    <p><b>Barcode:</b> ${p.meta.barcode}</p>
+    <img src="${p.meta.qrCode}" width="100">
+    `;
+
+ 
+   document.getElementById("modal").style.display = "block";//open modal
+   document.documentElement.classList.add("modal-open"); // Disable background scroll
+   //document.body.classList.add("modal-open"); //Disable background scroll
+}
+
+function closeModal() {
+  document.getElementById("modal").style.display = "none";
+  document.documentElement.classList.remove("modal-open");
+  //document.body.classList.remove("modal-open");
+}
+
+
+  
+function searchProducts() {
+  const input = document.getElementById("searchInput").value.toLowerCase();
+  const filteredProducts = products.filter(p =>
+    p.title.toLowerCase().includes(input) ||
+    p.category.toLowerCase().includes(input) ||
+    (p.brand && p.brand.toLowerCase().includes(input))
+  );
+
+  // To clear the old table data and then display the filtered products in the table.)
+  const table = document.getElementById("productTable");
+  table.innerHTML = table.rows[0].outerHTML;
+
+  populateTable(filteredProducts);
+}
+
+</script>
+
+</body>
+</html>
